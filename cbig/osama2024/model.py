@@ -77,8 +77,48 @@ class RnnModelInterp(torch.nn.Module):
 
     #     return torch.stack(out_cat_seq), torch.stack(out_val_seq)
     
-    def forward(self, cat_seq, val_seq):
+    # def forward(self, cat_seq, val_seq):
+    #     out_cat_seq, out_val_seq = [], []
+
+    #     hidden = self.init_hidden_state(val_seq.shape[1])
+    #     masks = self.dropout_mask(val_seq.shape[1])
+
+    #     for i, j in zip(range(len(val_seq)), range(1, len(val_seq))):
+    #         o_cat, o_val, hidden = self.predict(cat_seq[i], val_seq[i], hidden,
+    #                                             masks)
+
+    #         out_cat_seq.append(o_cat)
+    #         out_val_seq.append(o_val)
+
+    #         # Convert numpy array to PyTorch tensor
+    #         val_tensor = torch.tensor(val_seq[j], dtype=torch.float32)
+    #         cat_tensor = torch.tensor(cat_seq[j], dtype=torch.float32)
+
+    #         # Check for NaN values
+    #         idx = torch.isnan(val_tensor)
+    #         # Make a copy of o_val[idx] and detach it from the computation graph
+    #         modified_vals = o_val[idx].detach().cpu().numpy().copy()
+    #         # Create a new PyTorch tensor from the copy and assign it to val_seq[j]
+    #         val_seq[j][idx.numpy()] = torch.tensor(modified_vals, dtype=torch.float32)
+
+
+    #         # Make a copy of o_cat[idx] and detach it from the computation graph
+    #         modified_cats = o_cat[idx].detach().cpu().numpy().copy()
+    #         # Create a new PyTorch tensor from the copy and assign it to cat_seq[j]
+    #         cat_seq[j][idx.numpy()] = torch.tensor(modified_cats, dtype=torch.float32)
+
+
+    #     return torch.stack(out_cat_seq), torch.stack(out_val_seq)
+
+    
+    
+    
+    def forward(self, _cat_seq, _val_seq):
         out_cat_seq, out_val_seq = [], []
+        
+        # copy
+        cat_seq = _cat_seq.clone()
+        val_seq = _val_seq.clone()
 
         hidden = self.init_hidden_state(val_seq.shape[1])
         masks = self.dropout_mask(val_seq.shape[1])
@@ -92,37 +132,15 @@ class RnnModelInterp(torch.nn.Module):
 
             # fill in the missing features of the next timepoint
             idx = torch.isnan(val_seq[j])
-            val_seq[j][idx] = o_val[idx]  # directly modify the tensor without copy
+            #_val_seq[j][idx] = o_val.data.cpu().numpy()[idx]
+            val_seq[j][idx] = torch.tensor(o_val.data.cpu().numpy()[idx], dtype=torch.float32)
+
 
             idx = torch.isnan(cat_seq[j])
-            cat_seq[j][idx] = o_cat[idx]  # directly modify the tensor without copy
+            #_cat_seq[j][idx] = o_cat.data.cpu().numpy()[idx]
+            cat_seq[j][idx] = torch.tensor(o_cat.data.cpu().numpy()[idx], dtype=torch.float32)
 
-        return torch.stack(out_cat_seq), torch.stack(out_val_seq)
-
-    
-    
-    
-    # def forward(self, _cat_seq, _val_seq):
-    #     out_cat_seq, out_val_seq = [], []
-
-    #     hidden = self.init_hidden_state(_val_seq.shape[1])
-    #     masks = self.dropout_mask(_val_seq.shape[1])
-
-    #     for i, j in zip(range(len(_val_seq)), range(1, len(_val_seq))):
-    #         o_cat, o_val, hidden = self.predict(_cat_seq[i], _val_seq[i], hidden,
-    #                                             masks)
-
-    #         out_cat_seq.append(o_cat)
-    #         out_val_seq.append(o_val)
-
-    #         # fill in the missing features of the next timepoint
-    #         idx = torch.isnan(_val_seq[j])
-    #         _val_seq[j][idx] = o_val.data.cpu().numpy()[idx]
-
-    #         idx = torch.isnan(_cat_seq[j])
-    #         _cat_seq[j][idx] = o_cat.data.cpu().numpy()[idx]
-
-    #     return torch.stack(out_cat_seq), torch.stack(out_val_seq)
+        return torch.stack(out_cat_seq)
 
     # def forward(self, _cat_seq, _val_seq):
     #     if isinstance(_val_seq, np.ndarray):  # Handle numpy arrays

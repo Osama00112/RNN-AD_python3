@@ -101,7 +101,23 @@ def train_1epoch(args, model, dataset, optimizer):
             continue
 
         optimizer.zero_grad()
-        pred_cat, pred_val = model(to_cat_seq(batch['cat']), batch['val'])
+        seq_class_labels = to_cat_seq(batch['cat'])
+        seq_val_labels = batch['val']
+        
+        #convert to tensors
+        seq_class_labels = torch.tensor(seq_class_labels, dtype=torch.float32)
+        seq_val_labels = torch.tensor(seq_val_labels, dtype=torch.float32)
+        
+        #feed to model
+        pred_cat = model(seq_class_labels, seq_val_labels)
+        # set pred_value to random
+        pred_val = torch.rand(seq_val_labels.shape)
+        
+        
+        # print("Output type:", type(pred_cat))  # Assuming pred_cat and pred_val have similar types
+        # print("Output structure:", pred_cat.shape)  # Assuming pred_cat and pred_val have similar structures
+        
+        #pred_cat, pred_val = model(to_cat_seq(batch['cat']), batch['val'])
 
         #print("Predicted categorical values shape:", pred_cat.shape)
         #print("Predicted numerical values shape:", pred_val.shape)
@@ -111,7 +127,8 @@ def train_1epoch(args, model, dataset, optimizer):
         assert mask_cat.sum() > 0
 
         ent = ent_loss(pred_cat, batch['true_cat'][1:], mask_cat)
-        mae = mae_loss(pred_val, batch['true_val'][1:], batch['val_msk'][1:])
+        #mae = mae_loss(pred_val, batch['true_val'][1:], batch['val_msk'][1:])
+        mae = 0
         
         #print("Cross-entropy loss:", ent.item())
         #print("MAE loss:", mae.item())
@@ -123,7 +140,8 @@ def train_1epoch(args, model, dataset, optimizer):
         optimizer.step()
         batch_size = mask_cat.shape[1]
         total_ent += ent.item() * batch_size
-        total_mae += mae.item() * batch_size
+        #total_mae += mae.item() * batch_size
+        total_mae += 0
 
     return total_ent / len(dataset.subjects), total_mae / len(dataset.subjects)
 
