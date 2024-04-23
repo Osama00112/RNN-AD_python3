@@ -140,7 +140,38 @@ class RnnModelInterp(torch.nn.Module):
             #_cat_seq[j][idx] = o_cat.data.cpu().numpy()[idx]
             cat_seq[j][idx] = torch.tensor(o_cat.data.cpu().numpy()[idx], dtype=torch.float32)
 
-        return torch.stack(out_cat_seq)
+        return torch.stack(out_val_seq)
+        #return torch.stack(out_cat_seq)#, torch.stack(out_val_seq)
+    
+    # def forward(self, _cat_seq, _val_seq):
+    #     out_seq = []
+
+    #     # copy
+    #     cat_seq = _cat_seq.clone()
+    #     val_seq = _val_seq.clone()
+
+    #     hidden = self.init_hidden_state(val_seq.shape[1])
+    #     masks = self.dropout_mask(val_seq.shape[1])
+
+    #     for i, j in zip(range(len(val_seq)), range(1, len(val_seq))):
+    #         o_cat, o_val, hidden = self.predict(cat_seq[i], val_seq[i], hidden,
+    #                                             masks)
+
+    #         combined_tensor = torch.cat([o_cat.unsqueeze(1), o_val.unsqueeze(1)], dim=1)
+    #         out_seq.append(combined_tensor)
+
+    #         # fill in the missing features of the next timepoint
+    #         idx = torch.isnan(val_seq[j])
+    #         val_seq[j][idx] = torch.tensor(o_val.data.cpu().numpy()[idx], dtype=torch.float32)
+
+    #         idx = torch.isnan(cat_seq[j])
+    #         cat_seq[j][idx] = torch.tensor(o_cat.data.cpu().numpy()[idx], dtype=torch.float32)
+
+    #     return torch.stack(out_seq)
+
+
+    
+    
 
     # def forward(self, _cat_seq, _val_seq):
     #     if isinstance(_val_seq, np.ndarray):  # Handle numpy arrays

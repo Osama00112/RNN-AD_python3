@@ -126,19 +126,29 @@ def main():
     parser.add_argument('--folds', type=int, required=True)
     parser.add_argument('--output_dir', required=True)  
     
+    
+    
     args = parser.parse_args()
+    
+    # check if features path is valid
+    if not op.isfile(args.features):
+        raise ValueError('Invalid features path: %s' % args.features)
     
     np.random.seed(args.seed)
     
     columns = ['RID', 'DXCHANGE', 'EXAMDATE']
     
-    features = misc.load_features(args.features)
+    features = misc.load_feature(args.features)
     frame = pd.read_csv(
         args.spreadsheet, usecols=columns + features,
         converters=misc.CONVERTERS
     )
     
     frame['has_data'] = ~frame[features].isnull().apply(np.all, axis=1)
+    
+    #save frame to csv
+    frame.to_csv(op.join(args.output_dir, 'frame.csv'), index=False)
+    
     gen_fold(frame, args.folds, args.output_dir)
     
     

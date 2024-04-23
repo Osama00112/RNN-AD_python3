@@ -53,7 +53,7 @@ def get_data(args, fields):
 
 
 def main(args):
-    fields = misc.load_features(args.features)
+    fields = misc.load_feature(args.features)
     with open(args.out, 'wb') as fhandler:
         pickle.dump(get_data(args, fields), fhandler)
 
