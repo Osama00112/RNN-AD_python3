@@ -140,8 +140,6 @@ def predict(model, dataset, pred_start, duration, baseline):
         oval = oval[-duration:, 0, indices] * stds + mean
 
         ret['DX'].append(ocat[-duration:, 0, :])
-        #ret['ADAS13'].append(0)
-        #ret['Ventricles'].append(0)
         ret['ADAS13'].append(misc.add_ci_col(oval[:, 0], 1, 0, 85))
         ret['Ventricles'].append(
            misc.add_ci_col(oval[:, 1] / oval[:, 2], 5e-4, 0, 1))
