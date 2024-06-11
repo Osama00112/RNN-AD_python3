@@ -140,8 +140,8 @@ class RnnModelInterp(torch.nn.Module):
             #_cat_seq[j][idx] = o_cat.data.cpu().numpy()[idx]
             cat_seq[j][idx] = torch.tensor(o_cat.data.cpu().numpy()[idx], dtype=torch.float32)
 
-        return torch.stack(out_val_seq)
-        #return torch.stack(out_cat_seq)#, torch.stack(out_val_seq)
+        #return torch.stack(out_val_seq)
+        return torch.stack(out_cat_seq)#, torch.stack(out_val_seq)
     
     # def forward(self, _cat_seq, _val_seq):
     #     out_seq = []

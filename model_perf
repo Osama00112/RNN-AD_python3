@@ -1,0 +1,16 @@
+python -m cbig.osama2024.evaluation --reference output/fold_0_test.csv --prediction output/constant_prediction.csv
+
+########### Metrics for clinical status ##################
+mAUC 0.8746272270169329 bca 0.8660258846428444
+
+########### Mean Absolute Error (MAE) ##################
+adasMAE 4.916206896551724 ventsMAE 0.0027986266468683096
+
+
+python -m cbig.osama2024.evaluation --reference output/fold_0_test.csv --prediction output/prediction_test.csv
+
+########### Metrics for clinical status ##################
+mAUC 0.9075883393898099 bca 0.8253608532704941
+
+########### Mean Absolute Error (MAE) ##################
+adasMAE 5.0442257328671305 ventsMAE 0.005264703088196783

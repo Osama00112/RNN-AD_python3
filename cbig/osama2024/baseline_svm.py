@@ -51,14 +51,16 @@ def get_offset(start, interval, count):
 def interp(frame, idx, **args):
     """ Get interpolated values at indices """
     unique_idx = [i for i in idx if i not in frame.index]
-    aug_frame = frame.append(pd.DataFrame(index=unique_idx), sort=True)
-    in_frame = aug_frame.sort_index().interpolate('index', **args)
+    aug_frame = pd.DataFrame(index=unique_idx)  # Create a new DataFrame
+    aug_frame = aug_frame.join(frame)  # Join with the original frame
+    aug_frame = aug_frame.sort_index().interpolate('index', **args)
 
-    return in_frame.loc[idx, frame.columns]
+    return aug_frame.loc[idx, frame.columns]
+
 
 
 def get_subj_traindata(frame, offsets_from_tgt, fields):
-    """ Get training data for each subjects """
+    """ Get training data for each subject """
     frames = [
         interp(frame, frame.index - idx, limit_direction='backward')
         for idx in offsets_from_tgt
@@ -75,18 +77,15 @@ def get_subj_traindata(frame, offsets_from_tgt, fields):
     }
 
 
-def get_traindata(threadpool, data, offsets_from_tgt, fields):
-    """ Get training data """
-    jobs = [
-        delayed(get_subj_traindata)(sf, offsets_from_tgt, fields)
-        for sf in data.values()
-    ]
-    input_, output_ = zip(*threadpool(jobs))
-
-    input_ = np.concatenate(input_)
-    output_ = {f: np.concatenate([x[f] for x in output_]) for f in fields}
-
-    return input_, output_
+def get_traindata(data, indices, targets, fields):
+    """Get training data."""
+    input_, output_ = [], []
+    for subj_df in data:
+        subj_input = subj_df[fields].values  # Assuming 'fields' contains the desired columns
+        subj_output = subj_df[targets].values.ravel()
+        input_.append(subj_input)
+        output_.append(subj_output)
+    return np.array(input_), np.array(output_)
 
 
 def fit(tags, input_, output, **params):
@@ -165,7 +164,7 @@ def add_ci_col(values, c_interval, lowerbound, upperbound):
     return np.clip(out, lowerbound, upperbound)
 
 
-def fit_models(data, max_tp, interval, nb_predictions, model_params):
+def fit_models(data, max_tp, interval, nb_predictions, model_params, fields):
     """ Train SVM/SVR models """
     targets = model_params.keys()
     models = {k: [] for k in targets}
@@ -177,7 +176,7 @@ def fit_models(data, max_tp, interval, nb_predictions, model_params):
     for i in range(nb_predictions):
         for j in range(max_tp):
             indices = get_offset(interval * (i + 1), interval, j + 1)
-            in_, out_ = get_traindata(WORKERS, data, indices, targets)
+            in_, out_ = get_traindata(data, indices, targets, fields)
             in_[np.isnan(in_)] = 0.
 
             for k, params in model_params.items():
@@ -188,6 +187,8 @@ def fit_models(data, max_tp, interval, nb_predictions, model_params):
         models[k][i][j] = model
 
     return models
+
+
 
 
 def extract(out_matrix, boundaries):
@@ -306,6 +307,7 @@ def main(args):
     """ SVM baseline """
     np.random.seed(0)
     features = misc.load_feature(args.features)
+    fields = ['your', 'list', 'of', 'fields']  # Define your list of fields here
 
     frame = misc.load_table(args.spreadsheet,
                             ['RID', 'DX', 'Month_bl'] + features)
@@ -324,12 +326,15 @@ def main(args):
     train_df[features] = (train_df[features] - mean) / std
     test_df[features] = (test_df[features] - mean) / std
 
+    train_data = misc.get_data_dict(train_df, features)
+    test_data = misc.get_data_dict(test_df, features)  # Ensure test_data is a dictionary
+
     # Training
     interval, nb_keypoints = 6, 10
     model_groups = fit_models(
-        misc.get_data_dict(train_df, features), args.timepoints, interval,
-        nb_keypoints, get_model_params(args))
-
+        train_data, args.timepoints, interval,
+        nb_keypoints, get_model_params(args), fields)  # Pass 'fields' here
+    
     # Prediction
     test_data = misc.get_data_dict(test_df, features)
     pred = {'subjects': np.array(sorted(test_data.keys()))}
