@@ -36,7 +36,7 @@ def to_categorical(last_status):
 
 def main(args):
     """ Constant baseline prediction """
-    columns = ['RID', 'DX', 'ADAS13', 'Ventricles', 'ICV', 'EXAMDATE']
+    columns = ['RID', 'DX', 'ADAS11', 'Ventricles', 'ICV', 'EXAMDATE']
     frame = misc.load_table(args.spreadsheet, columns)
     # Ventricles volumes, normalised by intracranial volume
     frame['Vent'] = frame.Ventricles / frame.ICV

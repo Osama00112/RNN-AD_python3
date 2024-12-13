@@ -46,6 +46,7 @@ def predict_subject(model, cat_seq, value_seq, time_seq):
         val_seq = input_val.clone()
 
         hidden = model.init_hidden_state(val_seq.shape[1])
+        
         masks = model.dropout_mask(val_seq.shape[1])
 
         for i, j in zip(range(len(val_seq)), range(1, len(val_seq))):
@@ -125,8 +126,6 @@ def predict(model, dataset, pred_start, duration, baseline):
         icat = np.asarray(
             [misc.to_categorical(c, 3) for c in data['cat'][mask]])
         ival = data['val'][:, None, :][mask]
-        
-        
         
 
         ocat, oval = predict_subject(model, icat, ival, itime)

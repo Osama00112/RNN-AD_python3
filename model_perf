@@ -14,3 +14,11 @@ mAUC 0.9075883393898099 bca 0.8253608532704941
 
 ########### Mean Absolute Error (MAE) ##################
 adasMAE 5.0442257328671305 ventsMAE 0.005264703088196783
+
+
+with 20 features (excluding cdrsb and adas13)
+########### Metrics for clinical status ##################
+mAUC 0.891166928483105 bca 0.8154610217850949
+
+########### Mean Absolute Error (MAE) ##################
+adasMAE 3.3228348885364194 ventsMAE 0.0034566860015417364
