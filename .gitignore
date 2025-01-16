@@ -1,3 +1,10 @@
 output/** 
 data/TADPOLE_D1_D2.csv
 venv/** 
+MyData/** 
+MyData_cat/** 
+MyData_40_feat/**
+MyData_42_feat/**
+.Rproj.user
+pdfs/**
+.Rhistory
